@@ -15,21 +15,6 @@ HOURS_OLD: int = os.getenv("HOURS_OLD")
 #
 connection = sqlite3.connect(DATABASE_FILE)
 
-
-def get_jobs(search_term: str, location: str, results_wanted: int, hours_old: int) -> pd.DataFrame:
-    jobs = scrape_jobs(
-        site_name=["indeed", "linkedin", "glassdoor", "google"],
-        search_term=search_term,
-        google_search_term=f"{search_term} jobs near {location}, since yesterday",
-        location=location,
-        results_wanted=results_wanted,
-        hours_old=hours_old,
-        country_indeed="UK",
-        linkedin_fetch_description=True,
-    )
-    return jobs
-
-
 sectors = [
     "healthcare",
     "education",
@@ -54,6 +39,22 @@ sectors = [
     "creative",
     "security",
 ]
+
+def get_jobs(search_term: str, location: str, results_wanted: int, hours_old: int) -> pd.DataFrame:
+    jobs = scrape_jobs(
+        site_name=["indeed", "linkedin", "glassdoor", "google"],
+        search_term=search_term,
+        google_search_term=f"{search_term} jobs near {location}, since yesterday",
+        location=location,
+        results_wanted=results_wanted,
+        hours_old=hours_old,
+        country_indeed="UK",
+        linkedin_fetch_description=True,
+    )
+    return jobs
+
+
+
 
 job_list2 = pd.DataFrame()
 
