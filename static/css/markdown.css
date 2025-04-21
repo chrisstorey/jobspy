@@ -1,0 +1,44 @@
+.govuk-body pre {
+    background: #f8f8f8;
+    padding: 1rem;
+    border: 1px solid #bfc1c3;
+    margin: 1rem 0;
+    overflow-x: auto;
+}
+
+.govuk-body code {
+    background: #f8f8f8;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid #bfc1c3;
+    border-radius: 2px;
+}
+
+.govuk-body ul,
+.govuk-body ol {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.govuk-body li {
+    margin-bottom: 0.5rem;
+}
+
+.govuk-body a {
+    color: #1d70b8;
+    text-decoration: underline;
+}
+
+.govuk-body a:hover {
+    color: #003078;
+    text-decoration: underline;
+}
+
+.govuk-body h1,
+.govuk-body h2,
+.govuk-body h3,
+.govuk-body h4,
+.govuk-body h5,
+.govuk-body h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}

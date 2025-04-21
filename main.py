@@ -40,7 +40,10 @@ sectors = [
     "security",
 ]
 
-def get_jobs(search_term: str, location: str, results_wanted: int, hours_old: int) -> pd.DataFrame:
+
+def get_jobs(
+    search_term: str, location: str, results_wanted: int, hours_old: int
+) -> pd.DataFrame:
     jobs = scrape_jobs(
         site_name=["indeed", "linkedin", "glassdoor", "google"],
         search_term=search_term,
@@ -51,12 +54,11 @@ def get_jobs(search_term: str, location: str, results_wanted: int, hours_old: in
         country_indeed="UK",
         linkedin_fetch_description=True,
     )
+    jobs["search_term"] = search_term
+    jobs["search_location"] = location
+    jobs["date_scraped"] = pd.to_datetime("now")
     return jobs
 
-
-
-
-job_list2 = pd.DataFrame()
 
 for sector in sectors:
     job_list = get_jobs(sector, LOCATION, MAX_RESULTS, HOURS_OLD)
@@ -64,3 +66,4 @@ for sector in sectors:
     job_list.to_sql(
         name=DATABASE_TABLE, con=connection, if_exists="append", index=False
     )
+connection.close()

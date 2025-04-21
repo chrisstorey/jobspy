@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" class="govuk-template">
+<head>
+    <meta charset="utf-8">
+    <title>Job Search - GOV.UK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="
+https://cdn.jsdelivr.net/npm/govuk-frontend@5.9.0/dist/govuk/govuk-frontend.min.css
+" rel="stylesheet">
+<script src="
+https://cdn.jsdelivr.net/npm/govuk-frontend@5.9.0/dist/govuk/govuk-frontend.min.js
+"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
+</head>
+<body class="govuk-template__body">
+    <header class="govuk-header" role="banner" data-module="govuk-header">
+    <div class="govuk-header__container govuk-width-container">
+        <div class="govuk-header__content">
+            <a href="/" class="govuk-header__link govuk-header__link--service-name">
+                Job Search
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="govuk-button govuk-button--secondary govuk-!-margin-left-3">
+                Sign out
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+    <div class="govuk-width-container">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="govuk-footer">
+        <div class="govuk-width-container">
+            <div class="govuk-footer__meta">
+                <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+                    <h2 class="govuk-visually-hidden">Support links</h2>
+                    <span class="govuk-footer__licence-description">
+                        All content is available under the Open Government Licence v3.0
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>window.GOVUKFrontend.initAll()</script>
+</body>
+</html>

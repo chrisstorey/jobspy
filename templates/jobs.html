@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">Job Details</h1>
+
+        {% if job %}
+        <form class="govuk-form-group">
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="title">
+                    Job Title
+                </label>
+                <input class="govuk-input" id="title" name="title" type="text" value="{{ job.title }}" readonly>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="job_url">
+                    Job URL
+                </label>
+                <div class="govuk-form-group">
+                    <a href="{{ job.job_url }}" class="govuk-link" target="_blank">View job posting</a>
+                </div>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="company">
+                    Company
+                </label>
+                <input class="govuk-input" id="company" name="company" type="text" value="{{ job.company }}" readonly>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="location">
+                    Location
+                </label>
+                <input class="govuk-input" id="location" name="location" type="text" value="{{ job.location }}" readonly>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="salary">
+                    Salary Range
+                </label>
+                <input class="govuk-input" id="salary" name="salary" type="text"
+                       value="{% if job.min_amount %}£{{ job.min_amount }} - £{{ job.max_amount }} {{ job.interval }}{% endif %}"
+                       readonly>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="description">
+                    Description
+                </label>
+                <div class="govuk-body govuk-!-margin-bottom-6">
+                    {{ job.description|safe }}
+                </div>
+            </div>
+
+            <div class="govuk-button-group">
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('index', page=page-1) }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">Previous</a>
+                {% endif %}
+
+                {% if pagination.has_next %}
+                <a href="{{ url_for('index', page=page+1) }}" class="govuk-button" data-module="govuk-button">Next</a>
+                {% endif %}
+            </div>
+
+            <p class="govuk-body">
+                Job {{ page }} of {{ pagination.total }}
+            </p>
+        </form>
+        {% else %}
+        <p class="govuk-body">No jobs found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
