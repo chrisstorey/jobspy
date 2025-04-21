@@ -8,67 +8,87 @@
         {% if job %}
         <form class="govuk-form-group">
             <div class="govuk-form-group">
-                <label class="govuk-label" for="title">
-                    Job Title
-                </label>
-                <input class="govuk-input" id="title" name="title" type="text" value="{{ job.title }}" readonly>
+                <label class="govuk-label" for="title">Title</label>
+                <p class="govuk-body" id="title">{{ job.title }}</p>
             </div>
 
             <div class="govuk-form-group">
-                <label class="govuk-label" for="job_url">
-                    Job URL
-                </label>
-                <div class="govuk-form-group">
-                    <a href="{{ job.job_url }}" class="govuk-link" target="_blank">View job posting</a>
-                </div>
+                <label class="govuk-label" for="location">Location</label>
+                <p class="govuk-body" id="location">{{ job.location }}</p>
             </div>
 
             <div class="govuk-form-group">
-                <label class="govuk-label" for="company">
-                    Company
-                </label>
-                <input class="govuk-input" id="company" name="company" type="text" value="{{ job.company }}" readonly>
+                <label class="govuk-label" for="salary">Salary</label>
+                <p class="govuk-body" id="salary">
+                    {% if job.min_amount and job.max_amount %}
+                        {{ job.currency }}{{ "{:,.0f}".format(job.min_amount) }} - {{ job.currency }}{{ "{:,.0f}".format(job.max_amount) }} {{ job.interval }}
+                    {% else %}
+                        Not specified
+                    {% endif %}
+                </p>
             </div>
 
             <div class="govuk-form-group">
-                <label class="govuk-label" for="location">
-                    Location
-                </label>
-                <input class="govuk-input" id="location" name="location" type="text" value="{{ job.location }}" readonly>
-            </div>
-
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="salary">
-                    Salary Range
-                </label>
-                <input class="govuk-input" id="salary" name="salary" type="text"
-                       value="{% if job.min_amount %}£{{ job.min_amount }} - £{{ job.max_amount }} {{ job.interval }}{% endif %}"
-                       readonly>
-            </div>
-
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="description">
-                    Description
-                </label>
-                <div class="govuk-body govuk-!-margin-bottom-6">
+                <label class="govuk-label" for="description">Description</label>
+                <div class="govuk-body govuk-!-margin-bottom-6" id="description">
                     {{ job.description|safe }}
                 </div>
             </div>
 
-            <div class="govuk-button-group">
-                {% if pagination.has_prev %}
-                <a href="{{ url_for('index', page=page-1) }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">Previous</a>
-                {% endif %}
-
-                {% if pagination.has_next %}
-                <a href="{{ url_for('index', page=page+1) }}" class="govuk-button" data-module="govuk-button">Next</a>
-                {% endif %}
-            </div>
-
-            <p class="govuk-body">
-                Job {{ page }} of {{ pagination.total }}
-            </p>
+            <a href="{{ job.job_url }}"
+               class="govuk-button"
+               target="_blank"
+               rel="noopener noreferrer">
+                View Original Job Post
+            </a>
         </form>
+
+        {% if pagination.total > 1 %}
+        <nav class="govuk-pagination" role="navigation" aria-label="results">
+            {% if pagination.has_prev %}
+            <div class="govuk-pagination__prev">
+                <a class="govuk-link govuk-pagination__link" href="{{ url_for('index', page=page-1) }}" rel="prev">
+                    <span class="govuk-pagination__link-title">Previous</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <ul class="govuk-pagination__list">
+                {% if page > 1 %}
+                <li class="govuk-pagination__item">
+                    <a class="govuk-link govuk-pagination__link" href="{{ url_for('index', page=1) }}">1</a>
+                </li>
+                {% endif %}
+
+                {% if page > 2 %}
+                <li class="govuk-pagination__item govuk-pagination__item--ellipses">...</li>
+                {% endif %}
+
+                <li class="govuk-pagination__item govuk-pagination__item--current">
+                    {{ page }}
+                </li>
+
+                {% if page < pagination.total_pages - 1 %}
+                <li class="govuk-pagination__item govuk-pagination__item--ellipses">...</li>
+                {% endif %}
+
+                {% if page < pagination.total_pages %}
+                <li class="govuk-pagination__item">
+                    <a class="govuk-link govuk-pagination__link" href="{{ url_for('index', page=pagination.total_pages) }}">{{ pagination.total_pages }}</a>
+                </li>
+                {% endif %}
+            </ul>
+
+            {% if pagination.has_next %}
+            <div class="govuk-pagination__next">
+                <a class="govuk-link govuk-pagination__link" href="{{ url_for('index', page=page+1) }}" rel="next">
+                    <span class="govuk-pagination__link-title">Next</span>
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+        {% endif %}
+
         {% else %}
         <p class="govuk-body">No jobs found.</p>
         {% endif %}

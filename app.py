@@ -23,26 +23,67 @@ app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")  # Change this!
 
 
 def get_db_connection():
-    conn = sqlite3.connect(os.getenv("DATABASE_FILE", "all_jobs.sqlite"))
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect(os.getenv("DATABASE_FILE", "all_jobs.sqlite"))
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        raise
+
+
+def init_db():
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                location TEXT,
+                description TEXT,
+                min_amount REAL,
+                max_amount REAL,
+                interval TEXT,
+                currency TEXT,
+                job_url TEXT
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def process_markdown(text):
     # Convert markdown to HTML with safe extensions
-    html = markdown.markdown(text,
-                             extensions=['nl2br', 'fenced_code'],
-                             output_format='html5')
+    html = markdown.markdown(
+        text, extensions=["nl2br", "fenced_code"], output_format="html5"
+    )
 
     # Clean the HTML output to prevent XSS
-    allowed_tags = ['p', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'code',
-                    'pre', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-    allowed_attrs = {'a': ['href', 'title', 'target']}
+    allowed_tags = [
+        "p",
+        "ul",
+        "ol",
+        "li",
+        "strong",
+        "em",
+        "a",
+        "code",
+        "pre",
+        "br",
+        "hr",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+    ]
+    allowed_attrs = {"a": ["href", "title", "target"]}
 
-    clean_html = bleach.clean(html,
-                              tags=allowed_tags,
-                              attributes=allowed_attrs,
-                              strip=True)
+    clean_html = bleach.clean(
+        html, tags=allowed_tags, attributes=allowed_attrs, strip=True
+    )
     return clean_html
 
 
@@ -111,5 +152,61 @@ def index():
     )
 
 
+@app.route("/search")
+@login_required
+def search():
+    query = request.args.get("q", "")
+    if not query:
+        return redirect(url_for("index"))
+
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    try:
+        conn = get_db_connection()
+        total = conn.execute(
+            """SELECT COUNT(*) FROM jobs
+               WHERE title LIKE ? OR description LIKE ?""",
+            (f"%{query}%", f"%{query}%"),
+        ).fetchone()[0]
+
+        jobs = conn.execute(
+            """SELECT id, title, location, min_amount, max_amount, interval, currency, job_url
+               FROM jobs
+               WHERE title LIKE ? OR description LIKE ?
+               LIMIT ? OFFSET ?""",
+            (f"%{query}%", f"%{query}%", per_page, offset),
+        ).fetchall()
+
+        jobs = [dict(job) for job in jobs]
+        for job in jobs:
+            if job["min_amount"] and job["max_amount"]:
+                job["salary"] = f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
+            else:
+                job["salary"] = "Not specified"
+
+    finally:
+        conn.close()
+
+    pagination = Pagination(
+        page=page,
+        total=total,
+        per_page=per_page,
+        css_framework="govuk"
+    )
+
+    return render_template(
+        "search_results.html",
+        jobs=jobs,
+        pagination=pagination,
+        page=page,
+        per_page=per_page,
+        search_query=query,
+        total=total
+    )
+
+
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
