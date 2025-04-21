@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">{{ job.title }}</h1>
+
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Location</dt>
+                <dd class="govuk-summary-list__value">{{ job.location }}</dd>
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Salary</dt>
+                <dd class="govuk-summary-list__value">
+                    {% if job.min_amount and job.max_amount %}
+                        {{ job.currency }}{{ "{:,.0f}".format(job.min_amount) }} - {{ job.currency }}{{ "{:,.0f}".format(job.max_amount) }} {{ job.interval }}
+                    {% else %}
+                        Not specified
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+
+        <div class="govuk-body govuk-!-margin-bottom-6">
+            {{ job.description|safe }}
+        </div>
+
+        <a href="{{ job.job_url }}"
+           class="govuk-button"
+           target="_blank"
+           rel="noopener noreferrer">
+            View Original Job Post
+        </a>
+
+        <p class="govuk-body">
+            <a href="{{ url_for('index') }}" class="govuk-link">Back to all jobs</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

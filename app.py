@@ -19,7 +19,7 @@ from models import User, users
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")  # Change this!
+app.secret_key = os.getenv("SECRET_KEY", "BjOxqGxXLoaSbOFH")  # Change this!
 
 
 def get_db_connection():
@@ -35,7 +35,8 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     try:
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -47,7 +48,8 @@ def init_db():
                 currency TEXT,
                 job_url TEXT
             )
-        """)
+        """
+        )
         conn.commit()
     finally:
         conn.close()
@@ -93,7 +95,7 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 # Create a test user (replace with database storage in production)
-test_user = User(1, "admin", generate_password_hash("password123"))
+test_user = User(1, "chris", generate_password_hash("Liam1234"))
 users[test_user.username] = test_user
 
 
@@ -182,7 +184,9 @@ def search():
         jobs = [dict(job) for job in jobs]
         for job in jobs:
             if job["min_amount"] and job["max_amount"]:
-                job["salary"] = f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
+                job["salary"] = (
+                    f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
+                )
             else:
                 job["salary"] = "Not specified"
 
@@ -190,10 +194,7 @@ def search():
         conn.close()
 
     pagination = Pagination(
-        page=page,
-        total=total,
-        per_page=per_page,
-        css_framework="govuk"
+        page=page, total=total, per_page=per_page, css_framework="govuk"
     )
 
     return render_template(
@@ -203,9 +204,30 @@ def search():
         page=page,
         per_page=per_page,
         search_query=query,
-        total=total
+        total=total,
     )
 
+@app.route("/job/<string:job_id>")
+@login_required
+def view_job(job_id):
+    print(f"Job ID type: {type(job_id)}, value: {job_id}")  # Debug line
+    conn = get_db_connection()
+    try:
+        job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if job is None:
+            flash("Job not found")
+            return redirect(url_for("index"))
+
+        job = dict(job)
+        job["description"] = process_markdown(job["description"])
+        conn.close()
+        return render_template("job_detail.html", job=job)
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        flash("Error retrieving job details")
+        return redirect(url_for("index"))
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     init_db()
