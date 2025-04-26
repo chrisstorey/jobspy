@@ -14,7 +14,7 @@ pandas-stubs==2.2.3.250308
 pydantic==2.11.3
 pydantic_core==2.34.1
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 python-jobspy==1.1.80
 pytz==2025.1
 redis==5.2.1
