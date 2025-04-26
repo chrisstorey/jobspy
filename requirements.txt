@@ -11,7 +11,7 @@ mypy-extensions==1.0.0
 numpy==1.26.4
 pandas==2.2.3
 pandas-stubs==2.2.3.250308
-pydantic==2.10.6
+pydantic==2.11.3
 pydantic_core==2.27.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
