@@ -1,19 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-import sqlite3
-import pandas as pd
-from flask_paginate import Pagination, get_page_parameter
-from dotenv import load_dotenv
 import os
-import markdown
+import sqlite3
+
 import bleach
-from flask_login import (
+import markdown
+from dotenv import load_dotenv  # type: ignore
+from flask import Flask, render_template, request, redirect, url_for, flash  # type: ignore
+from flask_login import (  # type: ignore
     LoginManager,
     login_user,
     login_required,
     logout_user,
     current_user,
 )
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_paginate import Pagination, get_page_parameter  # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash  # type: ignore
+
 from models import User, users
 
 load_dotenv()
