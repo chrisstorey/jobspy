@@ -15,16 +15,95 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, users
+from flask_cors import CORS
+from datetime import datetime
+
 
 load_dotenv()
 
-app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")  # Change this!
+blog_posts = {
+    1: {
+        "title": "The Rise of AI in Software Development",
+        "image": "https://picsum.photos/seed/ai/800/400",
+        "date": "March 15, 2024",
+        "excerpt": "Artificial Intelligence is revolutionizing how we approach software development. Modern AI tools like GitHub Copilot and ChatGPT are becoming increasingly prevalent in development workflows...",
+        "content": """
+            <p class="lead">Artificial Intelligence is revolutionizing how we approach software development, from code completion to testing and deployment.</p>
 
+            <h2>The Current State of AI in Development</h2>
+            <p>Modern AI tools like GitHub Copilot and ChatGPT are becoming increasingly prevalent in development workflows. These tools can suggest code completions, help debug issues, and even generate entire functions based on natural language descriptions.</p>
+
+            <h2>Key Benefits</h2>
+            <ul>
+                <li>Increased developer productivity</li>
+                <li>Reduced time spent on boilerplate code</li>
+                <li>Better code quality through AI-assisted reviews</li>
+                <li>Faster problem-solving and debugging</li>
+            </ul>
+
+            <h2>Looking Ahead</h2>
+            <p>As AI continues to evolve, we can expect to see even more sophisticated tools that will help developers focus on higher-level problems while automating routine tasks. However, human creativity and problem-solving skills will remain essential in software development.</p>
+
+            <blockquote class="blockquote">
+                <p>"AI won't replace developers, but developers who use AI will replace those who don't."</p>
+            </blockquote>
+        """
+    },
+    2: {
+        "title": "Remote Work Best Practices",
+        "image": "https://picsum.photos/seed/remote/800/400",
+        "date": "March 14, 2024",
+        "excerpt": "As remote work becomes the norm in tech, establishing effective practices for virtual collaboration is crucial. Learn about the tools and strategies that make remote teams successful...",
+        "content": """
+            <p class="lead">The shift to remote work has fundamentally changed how tech teams collaborate and communicate.</p>
+
+            <h2>Essential Remote Work Tools</h2>
+            <p>Success in remote work environments depends heavily on the right combination of communication and collaboration tools. From video conferencing to asynchronous communication platforms, we explore the must-have tools for remote teams.</p>
+
+            <h2>Communication Strategies</h2>
+            <ul>
+                <li>Regular team check-ins and standups</li>
+                <li>Clear documentation practices</li>
+                <li>Effective async communication</li>
+                <li>Building virtual team culture</li>
+            </ul>
+
+            <h2>Work-Life Balance</h2>
+            <p>Remote work requires intentional boundaries between professional and personal life. We discuss strategies for maintaining productivity while avoiding burnout.</p>
+        """
+    },
+    3: {
+        "title": "Top Tech Skills for 2024",
+        "image": "https://picsum.photos/seed/skills/800/400",
+        "date": "March 13, 2024",
+        "excerpt": "Stay ahead of the curve with our comprehensive analysis of the most in-demand programming languages and technologies for 2024. From cloud computing to AI development...",
+        "content": """
+            <p class="lead">The tech industry continues to evolve rapidly. Here are the skills that will define success in 2024.</p>
+
+            <h2>Most In-Demand Programming Languages</h2>
+            <ul>
+                <li>Python for AI and Data Science</li>
+                <li>Rust for System Programming</li>
+                <li>TypeScript for Web Development</li>
+                <li>Kotlin for Android Development</li>
+            </ul>
+
+            <h2>Emerging Technologies</h2>
+            <p>Cloud computing, edge computing, and AI continue to reshape the technology landscape. Understanding these technologies is becoming essential for modern developers.</p>
+
+            <h2>Soft Skills Matter</h2>
+            <p>Beyond technical expertise, employers are increasingly valuing soft skills like problem-solving, communication, and adaptability.</p>
+        """
+    }
+}
+
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here") # Change this!
+CORS(app)
 
 def get_db_connection():
     try:
-        conn = sqlite3.connect(os.getenv("DATABASE_FILE", "all_jobs.sqlite"))
+        conn = sqlite3.connect(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite"))
         conn.row_factory = sqlite3.Row
         return conn
     except sqlite3.Error as e:
@@ -126,10 +205,23 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-
 @app.route("/")
 @login_required
 def index():
+    # Get the 3 most recent blog posts (sorted by ID in reverse order)
+    recent_posts = dict(sorted(blog_posts.items(), reverse=True)[:3])
+    return render_template("index.html", blog_posts=recent_posts)
+
+@app.route("/blog/<int:post_id>")
+@login_required
+def blog_post(post_id):
+    post = blog_posts.get(post_id)
+    if not post:
+        return redirect(url_for('index'))
+    return render_template("blog_post.html", post=post)
+@app.route("/jobs")
+@login_required
+def jobs():
     page = request.args.get(get_page_parameter(), type=int, default=1)
     per_page = 1
     offset = (page - 1) * per_page
