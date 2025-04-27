@@ -1,76 +1,118 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-import sqlite3
-import pandas as pd
-from flask_paginate import Pagination, get_page_parameter
-from dotenv import load_dotenv
 import os
-import markdown
-import bleach
-from flask_login import (
-    LoginManager,
-    login_user,
-    login_required,
-    logout_user,
-    current_user,
-)
-from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, users
-from flask_cors import CORS
-from datetime import datetime
+import sqlite3
 
+import bleach
+import markdown
+from dotenv import load_dotenv
+from flask import Flask, flash, redirect, render_template, request, url_for
+from flask_cors import CORS
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
+from flask_paginate import Pagination, get_page_parameter
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from models import User, users
 
 load_dotenv()
 
 blog_posts = {
-    1: {
-        "title": "The Rise of AI in Software Development",
-        "image": "https://picsum.photos/seed/ai/800/400",
-        "date": "March 15, 2024",
-        "excerpt": "Artificial Intelligence is revolutionizing how we approach software development. Modern AI tools like GitHub Copilot and ChatGPT are becoming increasingly prevalent in development workflows...",
-        "content": """
-            <p class="lead">Artificial Intelligence is revolutionizing how we approach software development, from code completion to testing and deployment.</p>
-
-            <h2>The Current State of AI in Development</h2>
-            <p>Modern AI tools like GitHub Copilot and ChatGPT are becoming increasingly prevalent in development workflows. These tools can suggest code completions, help debug issues, and even generate entire functions based on natural language descriptions.</p>
-
-            <h2>Key Benefits</h2>
-            <ul>
-                <li>Increased developer productivity</li>
-                <li>Reduced time spent on boilerplate code</li>
-                <li>Better code quality through AI-assisted reviews</li>
-                <li>Faster problem-solving and debugging</li>
-            </ul>
-
-            <h2>Looking Ahead</h2>
-            <p>As AI continues to evolve, we can expect to see even more sophisticated tools that will help developers focus on higher-level problems while automating routine tasks. However, human creativity and problem-solving skills will remain essential in software development.</p>
-
-            <blockquote class="blockquote">
-                <p>"AI won't replace developers, but developers who use AI will replace those who don't."</p>
-            </blockquote>
-        """
-    },
     2: {
-        "title": "Remote Work Best Practices",
-        "image": "https://picsum.photos/seed/remote/800/400",
-        "date": "March 14, 2024",
-        "excerpt": "As remote work becomes the norm in tech, establishing effective practices for virtual collaboration is crucial. Learn about the tools and strategies that make remote teams successful...",
+        "title": "Moving On From Your Entry-Level Job",
+        "image": "https://images.unsplash.com/photo-1549588628-34abaf47106c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "date": "March 15, 2024",
+        "excerpt": "Ready to level up your career in Huddersfield? This article guides you through recognizing when it's time to move on from your entry-level job and highlights local resources to help you take that next step....",
         "content": """
-            <p class="lead">The shift to remote work has fundamentally changed how tech teams collaborate and communicate.</p>
+Congratulations! You've landed that first step on the career ladder, gained valuable experience, and now you're feeling that familiar itch – the desire to grow and take on new challenges. Moving on from an entry-level job is a natural part of career progression, and in a vibrant town like Huddersfield, there are resources and strategies to help you make that leap successfully.
 
-            <h2>Essential Remote Work Tools</h2>
-            <p>Success in remote work environments depends heavily on the right combination of communication and collaboration tools. From video conferencing to asynchronous communication platforms, we explore the must-have tools for remote teams.</p>
+## Recognizing It's Time for a Change
 
-            <h2>Communication Strategies</h2>
-            <ul>
-                <li>Regular team check-ins and standups</li>
-                <li>Clear documentation practices</li>
-                <li>Effective async communication</li>
-                <li>Building virtual team culture</li>
-            </ul>
+How do you know when it's time to move on? Here are a few tell-tale signs:
 
-            <h2>Work-Life Balance</h2>
-            <p>Remote work requires intentional boundaries between professional and personal life. We discuss strategies for maintaining productivity while avoiding burnout.</p>
-        """
+* **You've mastered your current role:** The tasks have become routine, and you're no longer learning new skills
+* **Limited growth opportunities:** You see little to no possibility for advancement within your current company
+* **Your skills and interests have evolved:** You've discovered new passions or developed skills that aren't being utilized
+* **You're feeling stagnant or unfulfilled:** Your work no longer excites you, and you crave more responsibility
+
+## Taking Proactive Steps
+
+Once you've recognized it's time for a change, here's how to approach your next career move in Huddersfield:
+
+1. **Self-Assessment and Goal Setting:** Take time to reflect on your skills, interests, and values
+2. **Update Your CV and Cover Letter:** Highlight skills and accomplishments from your entry-level role
+3. **Network, Network, Network:** Attend local industry events and join professional groups
+4. **Skill Development:** Identify and address skills gaps through courses and workshops
+5. **Job Searching Strategies:** Utilize online job boards and company career pages
+6. **Prepare for Interviews:** Practice your interview skills and articulate your career goals
+
+## Who Can Help You in Huddersfield?
+
+Huddersfield offers several resources to support you in your career transition:
+
+* **Kirklees Council Employment and Skills:** Access job fairs and training programs
+* **Huddersfield University Careers Service:** Career guidance and resources
+* **Local Recruitment Agencies:** Connect with agencies specializing in your field
+* **Networking Groups:** Join the Huddersfield & District Chamber of Commerce
+* **Local Colleges:** Explore courses at Kirklees College for upskilling
+
+Moving on from your entry-level job is an exciting step in your career journey. By being proactive and utilizing local resources, you can successfully navigate this transition.
+""",
+    },
+    1: {
+        "title": "Finding support in mentorship",
+        "image": "https://picsum.photos/seed/remote/800/400",
+        "date": "April 27, 2025",
+        "excerpt": "Ready to skyrocket your career or personal growth? Discover the power of mentorship and unlock invaluable guidance right here in your community. Let's find your perfect mentor! ...",
+        "content": """
+Okay, let's delve deeper into the world of mentorship in Huddersfield and expand on those initial ideas.
+
+## Finding Mentors in Huddersfield: Guiding Your Journey to Success
+
+Okay, I've expanded the article with more details from my search:
+
+**Finding Mentors in Huddersfield**
+
+**Introduction**
+
+Mentorship is a valuable resource for personal and professional growth. A mentor can provide guidance, support, and inspiration, helping you to achieve your goals. If you are looking for a mentor in Huddersfield, there are a number of resources available to you.
+
+**How to find a mentor in Huddersfield**
+
+  * **Networking:** Attend industry events and meetups. This is a great way to meet potential mentors who are working in your field of interest. Check out platforms like [Meetup](https://www.meetup.com/find/gb--45--huddersfield/networking/) and [Eventbrite](https://www.eventbrite.co.uk/d/united-kingdom--huddersfield/networking/) for networking events in Huddersfield.
+
+  * **Online platforms:** There are a number of online platforms that connect mentors and mentees. Some popular options include MentorCruise, NxtMngr, and ADPList.
+
+  * **Professional organizations:** Many professional organizations have mentorship programs. The [Huddersfield Chamber of Commerce](https://www.google.com/search?q=https://www.huddersfieldchamber.com/) is a good place to start.
+
+  * **University of Huddersfield:** [The University of Huddersfield](https://www.hud.ac.uk/) offers coaching and mentoring programs for staff and has mentors for students and startups. Check out their [coaching and mentoring page](https://staff.hud.ac.uk/hr/pod/coaching-and-mentoring/) for more information.
+
+  * **General Practice Mentoring (GPMplus):** This free service is available for GPs, PMs, Nurses, and other practice staff with leadership or decision-making responsibilities in the West Yorkshire, North Yorkshire and Humberside areas. [GPMplus](https://gpmplus.co.uk/general-prcatice-mentoring-2/) can help with career goals, problem-solving, and work-life balance.
+
+  * **Welcome Mentors:** Coordinated by Third Sector Leaders Kirklees, this program supports refugees, asylum seekers, and migrants settling in Kirklees. [Welcome Mentors](https://tslkirklees.org.uk/get-help-with/welcome-mentors/) offer help with accessing services and integrating into the community.
+
+  * **Huddersfield Health Innovation Partnership (HHIP):** HHIP offers mentoring for health and wellbeing organizations looking to develop innovative products or services. More details can be found on the [HHIP support page](https://huddshealthinnovation.org/support/).
+
+  * **Friends and family:** Ask your friends and family if they know anyone who might be a good mentor for you.
+
+**Tips for finding a good mentor**
+
+  * **Do your research:** Make sure you understand what you are looking for in a mentor. What are your goals? What skills do you want to develop?
+  * **Be clear about your expectations:** Let your potential mentor know what you are hoping to gain from the relationship.
+  * **Be proactive:** Don't wait for your mentor to reach out to you. Be sure to stay in touch and let them know how you are progressing.
+  * **Be grateful:** Show your appreciation for your mentor's time and guidance.
+
+**Conclusion**
+
+Finding a mentor can be a great way to accelerate your personal and professional growth. If you are looking for a mentor in Huddersfield, there are a number of resources available to you. By following the tips above, you can increase your chances of finding a good mentor who can help you achieve your goals.
+
+**Additional resources**
+
+  * [Huddersfield Chamber of Commerce](https://www.google.com/search?q=https://www.huddersfieldchamber.com/)
+  * [The University of Huddersfield](https://www.hud.ac.uk/)
+  * [Huddersfield Young Professionals](https://www.google.com/search?q=https://www.huddersfieldyp.co.uk/)
+
+I hope this article has been helpful. If you have any questions, please feel free to leave a comment below.
+Remote work requires intentional boundaries between professional and personal life. We discuss strategies for maintaining productivity while avoiding burnout.
+""",
     },
     3: {
         "title": "Top Tech Skills for 2024",
@@ -78,30 +120,39 @@ blog_posts = {
         "date": "March 13, 2024",
         "excerpt": "Stay ahead of the curve with our comprehensive analysis of the most in-demand programming languages and technologies for 2024. From cloud computing to AI development...",
         "content": """
-            <p class="lead">The tech industry continues to evolve rapidly. Here are the skills that will define success in 2024.</p>
+# Top Tech Skills for 2024
 
-            <h2>Most In-Demand Programming Languages</h2>
-            <ul>
-                <li>Python for AI and Data Science</li>
-                <li>Rust for System Programming</li>
-                <li>TypeScript for Web Development</li>
-                <li>Kotlin for Android Development</li>
-            </ul>
+The tech industry continues to evolve rapidly. Here are the skills that will define success in 2024.
 
-            <h2>Emerging Technologies</h2>
-            <p>Cloud computing, edge computing, and AI continue to reshape the technology landscape. Understanding these technologies is becoming essential for modern developers.</p>
+## Most In-Demand Programming Languages
 
-            <h2>Soft Skills Matter</h2>
-            <p>Beyond technical expertise, employers are increasingly valuing soft skills like problem-solving, communication, and adaptability.</p>
-        """
-    }
+* Python for AI and Data Science
+* Rust for System Programming
+* TypeScript for Web Development
+* Kotlin for Android Development
+
+## Emerging Technologies
+
+Cloud computing, edge computing, and AI continue to reshape the technology landscape. Understanding these technologies is becoming essential for modern developers.
+
+## Soft Skills Matter
+
+Beyond technical expertise, employers are increasingly valuing soft skills like problem-solving, communication, and adaptability.
+""",
+    },
 }
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here") # Change this!
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")  # Change this!
 CORS(app)
 
+
 def get_db_connection():
+    """Establishes a connection to the SQLite database."""
+    if not os.path.exists(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite")):
+        raise FileNotFoundError(
+            "Database file not found. Please ensure the database file exists."
+        )
     try:
         conn = sqlite3.connect(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite"))
         conn.row_factory = sqlite3.Row
@@ -112,9 +163,17 @@ def get_db_connection():
 
 
 def init_db():
+    """Initializes the database by creating the necessary tables."""
+    # Check if the database file exists
+    if not os.path.exists(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite")):
+        print("Database file does not exist. Please check the path.")
+        return
+
+    # Create the jobs table if it doesn't exist
     conn = get_db_connection()
     try:
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -126,7 +185,8 @@ def init_db():
                 currency TEXT,
                 job_url TEXT
             )
-        """)
+        """
+        )
         conn.commit()
     finally:
         conn.close()
@@ -178,6 +238,10 @@ users[test_user.username] = test_user
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Load a user from the user_id."""
+    # In this example, we're using a simple dictionary to store users
+    # In a real application, you would query the database
+    # to retrieve the user by their ID
     for user in users.values():
         if str(user.id) == user_id:
             return user
@@ -186,6 +250,14 @@ def load_user(user_id):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Login route to authenticate users."""
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # Handle POST request for login
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -202,8 +274,11 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    """Logout route to log out the user."""
     logout_user()
+    flash("You have been logged out.")
     return redirect(url_for("login"))
+
 
 @app.route("/")
 @login_required
@@ -212,13 +287,19 @@ def index():
     recent_posts = dict(sorted(blog_posts.items(), reverse=True)[:3])
     return render_template("index.html", blog_posts=recent_posts)
 
+
 @app.route("/blog/<int:post_id>")
 @login_required
 def blog_post(post_id):
     post = blog_posts.get(post_id)
     if not post:
-        return redirect(url_for('index'))
+        return redirect(url_for("index"))
+    # Convert markdown content to HTML
+    post = dict(post)
+    post["content"] = markdown.markdown(post["content"])
     return render_template("blog_post.html", post=post)
+
+
 @app.route("/jobs")
 @login_required
 def jobs():
@@ -274,7 +355,9 @@ def search():
         jobs = [dict(job) for job in jobs]
         for job in jobs:
             if job["min_amount"] and job["max_amount"]:
-                job["salary"] = f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
+                job["salary"] = (
+                    f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
+                )
             else:
                 job["salary"] = "Not specified"
 
@@ -282,10 +365,7 @@ def search():
         conn.close()
 
     pagination = Pagination(
-        page=page,
-        total=total,
-        per_page=per_page,
-        css_framework="govuk"
+        page=page, total=total, per_page=per_page, css_framework="govuk"
     )
 
     return render_template(
@@ -295,7 +375,7 @@ def search():
         page=page,
         per_page=per_page,
         search_query=query,
-        total=total
+        total=total,
     )
 
 
