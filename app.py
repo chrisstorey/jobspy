@@ -6,12 +6,85 @@ import markdown
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_cors import CORS
-from flask_login import (LoginManager, current_user, login_required,
-                         login_user, logout_user)
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 from flask_paginate import Pagination, get_page_parameter
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import User, users
+
+
+# Add these utility functions at the top level, after the imports
+def format_title_case(text):
+    """Format text in title case with special handling for conjunctions and parentheses."""
+    conjunctions = {
+        "and",
+        "or",
+        "but",
+        "nor",
+        "yet",
+        "so",
+        "for",
+        "in",
+        "to",
+        "the",
+        "a",
+        "an",
+    }
+
+    if "(" in text and ")" in text:
+        before_paren = text[: text.find("(")]
+        in_paren = text[text.find("(") : text.find(")") + 1]
+        after_paren = text[text.find(")") + 1 :]
+
+        words_before = [
+            word.capitalize() if word.lower() not in conjunctions else word.lower()
+            for word in before_paren.split()
+        ]
+        words_in_paren = [
+            word.capitalize() if word.lower() not in conjunctions else word.lower()
+            for word in in_paren[1:-1].split()
+        ]
+        words_after = [
+            word.capitalize() if word.lower() not in conjunctions else word.lower()
+            for word in after_paren.split()
+        ]
+
+        if words_before:
+            words_before[0] = words_before[0].capitalize()
+        if words_in_paren:
+            words_in_paren[0] = words_in_paren[0].capitalize()
+        if words_after:
+            words_after[0] = words_after[0].capitalize()
+
+        return f"{' '.join(words_before)}({' '.join(words_in_paren)}){' '.join(words_after)}"
+    else:
+        words = text.split()
+        result = []
+        for i, word in enumerate(words):
+            if i == 0:
+                result.append(word.capitalize())
+            else:
+                result.append(
+                    word.capitalize()
+                    if word.lower() not in conjunctions
+                    else word.lower()
+                )
+        return " ".join(result)
+
+
+def format_salary(min_amount, max_amount, currency, interval):
+    """Format salary with proper currency symbol."""
+    if min_amount and max_amount:
+        currency_symbol = "£" if currency == "GBP" else currency
+        return f"{currency_symbol}{min_amount:,.0f} - {currency_symbol}{max_amount:,.0f} {interval}"
+    return "Not specified"
+
 
 load_dotenv()
 
@@ -149,7 +222,7 @@ CORS(app)
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
-    if not os.path.exists(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite")):
+    if not os.path.exists(os.getenv("DATABASE_FILE", "all_jobs.sqlite")):
         raise FileNotFoundError(
             "Database file not found. Please ensure the database file exists."
         )
@@ -164,18 +237,16 @@ def get_db_connection():
 
 def init_db():
     """Initializes the database by creating the necessary tables."""
-    # Check if the database file exists
     if not os.path.exists(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite")):
         print("Database file does not exist. Please check the path.")
         return
 
-    # Create the jobs table if it doesn't exist
     conn = get_db_connection()
     try:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS jobs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
                 location TEXT,
                 description TEXT,
@@ -281,7 +352,6 @@ def logout():
 
 
 @app.route("/")
-@login_required
 def index():
     # Get the 3 most recent blog posts (sorted by ID in reverse order)
     recent_posts = dict(sorted(blog_posts.items(), reverse=True)[:3])
@@ -301,30 +371,6 @@ def blog_post(post_id):
 
 
 @app.route("/jobs")
-@login_required
-def jobs():
-    page = request.args.get(get_page_parameter(), type=int, default=1)
-    per_page = 1
-    offset = (page - 1) * per_page
-
-    conn = get_db_connection()
-    total = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
-    job = conn.execute("SELECT * FROM jobs LIMIT 1 OFFSET ?", (offset,)).fetchone()
-    conn.close()
-
-    if job is not None:
-        job = dict(job)
-        job["description"] = process_markdown(job["description"])
-
-    pagination = Pagination(
-        page=page, total=total, per_page=per_page, css_framework="govuk"
-    )
-
-    return render_template(
-        "jobs.html", job=job, pagination=pagination, page=page, per_page=per_page
-    )
-
-
 @app.route("/search")
 @login_required
 def search():
@@ -345,7 +391,7 @@ def search():
         ).fetchone()[0]
 
         jobs = conn.execute(
-            """SELECT id, title, location, min_amount, max_amount, interval, currency, job_url
+            """SELECT id, title, location, min_amount, max_amount, interval, currency
                FROM jobs
                WHERE title LIKE ? OR description LIKE ?
                LIMIT ? OFFSET ?""",
@@ -354,12 +400,10 @@ def search():
 
         jobs = [dict(job) for job in jobs]
         for job in jobs:
-            if job["min_amount"] and job["max_amount"]:
-                job["salary"] = (
-                    f"{job['currency']}{job['min_amount']:,.0f} - {job['currency']}{job['max_amount']:,.0f} {job['interval']}"
-                )
-            else:
-                job["salary"] = "Not specified"
+            job["title"] = format_title_case(job["title"])
+            job["salary"] = format_salary(
+                job["min_amount"], job["max_amount"], job["currency"], job["interval"]
+            )
 
     finally:
         conn.close()
@@ -377,6 +421,32 @@ def search():
         search_query=query,
         total=total,
     )
+
+
+@app.route("/jobs")
+@app.route("/jobs/<string:job_id>")
+@login_required
+def view_job(job_id=None):
+    if job_id is None:
+        return redirect(url_for("index"))
+
+    conn = get_db_connection()
+    try:
+        job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if job is None:
+            return redirect(url_for("index"))
+
+        job = dict(job)
+        job["description"] = process_markdown(job["description"])
+        job["title"] = format_title_case(job["title"])
+        job["salary"] = format_salary(
+            job["min_amount"], job["max_amount"], job["currency"], job["interval"]
+        )
+
+    finally:
+        conn.close()
+
+    return render_template("jobs.html", job=job, pagination=None)
 
 
 if __name__ == "__main__":
