@@ -6,6 +6,7 @@ import markdown
 
 from dotenv import load_dotenv  # type: ignore
 from flask import Flask, render_template, request, redirect, url_for, flash  # type: ignore
+from flask_cors import CORS
 from flask_login import (
     LoginManager,
     current_user,
@@ -182,7 +183,6 @@ def blog_post(post_id):
     return render_template("blog_post.html", post=post)
 
 
-@app.route("/jobs")
 @app.route("/search")
 @login_required
 def search():
@@ -233,11 +233,14 @@ def search():
         search_query=query,
         total=total,
     )
-
-@app.route("/job/<string:job_id>")
+@app.route("/jobs")
+@app.route("/jobs/<string:job_id>")
 @login_required
-def view_job(job_id):
-    print(f"Job ID type: {type(job_id)}, value: {job_id}")  # Debug line
+def view_job(job_id=None):
+    if job_id is None:
+        # If no job_id is provided, redirect to index
+        return redirect(url_for("index"))
+
     conn = get_db_connection()
     try:
         job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
@@ -247,7 +250,11 @@ def view_job(job_id):
 
         job = dict(job)
         job["description"] = process_markdown(job["description"])
-        conn.close()
+        job["title"] = format_title_case(job["title"])
+        job["salary"] = format_salary(
+            job["min_amount"], job["max_amount"], job["currency"], job["interval"]
+        )
+
         return render_template("job_detail.html", job=job)
     except sqlite3.Error as e:
         print(f"Database error: {e}")
@@ -255,32 +262,6 @@ def view_job(job_id):
         return redirect(url_for("index"))
     finally:
         conn.close()
-
-@app.route("/jobs")
-@app.route("/jobs/<string:job_id>")
-@login_required
-def view_job(job_id=None):
-    if job_id is None:
-        return redirect(url_for("index"))
-
-    conn = get_db_connection()
-    try:
-        job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        if job is None:
-            return redirect(url_for("index"))
-
-        job = dict(job)
-        job["description"] = process_markdown(job["description"])
-        job["title"] = format_title_case(job["title"])
-        job["salary"] = format_salary(
-            job["min_amount"], job["max_amount"], job["currency"], job["interval"]
-        )
-
-    finally:
-        conn.close()
-
-    return render_template("jobs.html", job=job, pagination=None)
-
 
 if __name__ == "__main__":
     init_db()

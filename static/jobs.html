@@ -2,38 +2,30 @@
 {% block content %}
 <div class="card mb-4">
     <div class="card-body">
-        <div class="row">
-            <div class="col-9">
-                <h1 class="card-title">{{ job.title }}</h1>
-                <p class="card-text"><strong>Location:</strong> {{ job.location }}</p>
-                <p class="card-text"><strong>Salary:</strong> {{ job.salary }}</p>
-                <div class="card-text">{{ job.description|safe }}</div>
-            </div>
-            <div class="col-3">
-                <div id="map" style="position: sticky; top: 1rem; width: 100%; aspect-ratio: 1;"></div>
-                {% if job.job_url %}
-                <a href="{{ job.job_url }}" class="btn btn-secondary w-100 mt-3" target="_blank">Apply Now</a>
-                {% endif %}
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col">
-                <a href="{{ request.referrer }}" class="btn btn-secondary">← Back to Search Results</a>
-            </div>
-        </div>
+        <h1 class="card-title">{{ job.title }}</h1>
+        <p class="card-text"><strong>Location:</strong> {{ job.location }}</p>
+        <p class="card-text"><strong>Salary:</strong> {{ job.salary }}</p>
+        <div id="map" style="height: 400px; margin-bottom: 20px;"></div>
+        <div class="card-text">{{ job.description|safe }}</div>
+        {% if job.job_url %}
+        <a href="{{ job.job_url }}" class="btn btn-primary mt-3" target="_blank">Apply Now</a>
+        {% endif %}
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Extract first part of location (before comma or parenthesis)
         const fullLocation = "{{ job.location }}";
         const location = fullLocation.split(/[,(]/)[0].trim();
 
+        // Initialize map
         const map = L.map('map').setView([0, 0], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        // Geocode location using Nominatim
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)},UK`)
             .then(response => response.json())
             .then(data => {
@@ -44,7 +36,6 @@
                     L.marker([lat, lon])
                         .addTo(map)
                         .bindPopup(location);
-                    map.invalidateSize();
                 }
             })
             .catch(error => console.error('Error:', error));
