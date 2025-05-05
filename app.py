@@ -19,7 +19,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from blog import blog_posts
 
-from models import User, users
+from models.models import User, users
 from utils.utils import format_title_case, format_salary
 
 # Add these utility functions at the top level, after the imports

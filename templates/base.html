@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --primary-blue: #1A3A6D;
@@ -62,6 +63,12 @@
             border-color: var(--accent-orange);
             box-shadow: 0 0 0 0.25rem rgba(242, 140, 40, 0.25);
         }
+        .footer a:hover {
+            color: var(--accent-orange) !important;
+        }
+        .footer h5 {
+            color: var(--accent-orange);
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -92,8 +99,34 @@
     </div>
 
     <footer class="footer mt-auto">
-        <div class="container text-center">
-            <small>All content is available under the Open Government Licence v3.0</small>
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <h5 class="mb-3">Contact Us</h5>
+                    <p class="mb-1">
+                        <i class="fas fa-building me-2"></i>
+                        Huddersfield Jobs<br>
+                        <span class="ms-4">c/o 44 Blagden Lane</span><br>
+                        <span class="ms-4">Huddersfield</span><br>
+                        <span class="ms-4">HD4 6JZ</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Get in Touch</h5>
+                    <p class="mb-1">
+                        <i class="fas fa-envelope me-2"></i>
+                        <a href="mailto:info@hudd-jobs.com" class="text-white text-decoration-none">info@hudd-jobs.com</a>
+                    </p>
+                    <p class="mb-1">
+                        <i class="fa-brands fa-x-twitter me-2"></i>
+                        <a href="https://x.com/hudd_jobs" class="text-white text-decoration-none">hudd-jobs@x.com</a>
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-phone me-2"></i>
+                        <a href="tel:+441484123456" class="text-white text-decoration-none">01484 123456</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
 </body>
