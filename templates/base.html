@@ -1,64 +1,98 @@
 <!DOCTYPE html>
-<html lang="en" class="govuk-template">
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Job Search - GOV.UK</title>
+    <title>Job Search</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="
-https://cdn.jsdelivr.net/npm/govuk-frontend@5.9.0/dist/govuk/govuk-frontend.min.css
-" rel="stylesheet">
-<script src="
-https://cdn.jsdelivr.net/npm/govuk-frontend@5.9.0/dist/govuk/govuk-frontend.min.js
-"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
+    <style>
+        :root {
+            --primary-blue: #1A3A6D;
+            --accent-orange: #F28C28;
+            --bg-offwhite: #F8F9FA;
+            --bg-white: #FFFFFF;
+            --text-dark: #495057;
+            --text-medium: #CED4DA;
+        }
+        body {
+            background-color: var(--bg-offwhite);
+            color: var(--text-dark);
+        }
+        .navbar {
+            background-color: var(--primary-blue);
+        }
+        .navbar-brand {
+            color: var(--bg-white);
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: var(--bg-white);
+        }
+        .btn-primary:hover {
+            background-color: #234785;
+            border-color: #234785;
+        }
+        .btn-secondary {
+            background-color: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: var(--bg-white);
+        }
+        .btn-secondary:hover {
+            background-color: #DA7B1B;
+            border-color: #DA7B1B;
+        }
+        .footer {
+            background-color: var(--primary-blue);
+            color: var(--bg-white);
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+        .form-control {
+            background-color: var(--bg-white);
+            border-color: var(--text-medium);
+            color: var(--text-dark);
+        }
+        .form-control:focus {
+            background-color: var(--bg-white);
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 0.25rem rgba(242, 140, 40, 0.25);
+        }
+    </style>
 </head>
-<header class="govuk-header" role="banner" data-module="govuk-header">
-    <div class="govuk-header__container govuk-width-container">
-        <div class="govuk-header__content">
-            <a href="/" class="govuk-header__link govuk-header__link--service-name">
-                Job Search
-            </a>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">Job Search</a>
             {% if current_user.is_authenticated %}
-            <div class="govuk-header__navigation">
-                <form action="{{ url_for('search') }}" method="get" class="govuk-!-display-inline-block govuk-!-margin-right-3">
-                    <div class="govuk-form-group govuk-!-margin-bottom-0">
-                        <input class="govuk-input govuk-input--width-20"
-                               name="q"
-                               type="search"
-                               value="{{ search_query if search_query is defined else '' }}"
-                               placeholder="Search jobs...">
-                        <button class="govuk-button govuk-!-margin-left-2" data-module="govuk-button">
-                            Search
-                        </button>
-                    </div>
+            <div class="d-flex align-items-center">
+                <form action="{{ url_for('search') }}" method="get" class="d-flex me-3">
+                    <input class="form-control me-2"
+                           type="search"
+                           name="q"
+                           placeholder="Search jobs..."
+                           value="{{ search_query if search_query is defined else '' }}"
+                           aria-label="Search">
+                    <button class="btn btn-secondary" type="submit">Search</button>
                 </form>
-                <a href="{{ url_for('logout') }}" class="govuk-button govuk-button--secondary">
-                    Sign out
-                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-primary">Sign out</a>
             </div>
             {% endif %}
         </div>
-    </div>
-</header>
+    </nav>
 
-    <div class="govuk-width-container">
-        <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="container my-4">
+        <main>
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <footer class="govuk-footer">
-        <div class="govuk-width-container">
-            <div class="govuk-footer__meta">
-                <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-                    <h2 class="govuk-visually-hidden">Support links</h2>
-                    <span class="govuk-footer__licence-description">
-                        All content is available under the Open Government Licence v3.0
-                    </span>
-                </div>
-            </div>
+    <footer class="footer mt-auto">
+        <div class="container text-center">
+            <small>All content is available under the Open Government Licence v3.0</small>
         </div>
     </footer>
-    <script>window.GOVUKFrontend.initAll()</script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 import os
+import sqlite3
 
 import pandas as pd
-from jobspy import scrape_jobs
-import sqlite3
 from dotenv import load_dotenv
+
+from jobspy import scrape_jobs
 
 load_dotenv()
 DATABASE_TABLE: str = os.getenv("DATABASE_TABLE")
