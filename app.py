@@ -3,9 +3,9 @@ import sqlite3
 
 import bleach
 import markdown
-from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, url_for
-from flask_cors import CORS
+
+from dotenv import load_dotenv  # type: ignore
+from flask import Flask, render_template, request, redirect, url_for, flash  # type: ignore
 from flask_login import (
     LoginManager,
     current_user,
@@ -17,6 +17,7 @@ from flask_paginate import Pagination, get_page_parameter
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from blog import blog_posts
+
 from models import User, users
 from utils.utils import format_title_case, format_salary
 
@@ -26,6 +27,7 @@ from utils.utils import format_title_case, format_salary
 load_dotenv()
 
 app = Flask(__name__)
+
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")  # Change this!
 CORS(app)
 
@@ -113,7 +115,7 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 # Create a test user (replace with database storage in production)
-test_user = User(1, "admin", generate_password_hash("password123"))
+test_user = User(1, "chris", generate_password_hash("Liam1234"))
 users[test_user.username] = test_user
 
 
@@ -232,6 +234,27 @@ def search():
         total=total,
     )
 
+@app.route("/job/<string:job_id>")
+@login_required
+def view_job(job_id):
+    print(f"Job ID type: {type(job_id)}, value: {job_id}")  # Debug line
+    conn = get_db_connection()
+    try:
+        job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if job is None:
+            flash("Job not found")
+            return redirect(url_for("index"))
+
+        job = dict(job)
+        job["description"] = process_markdown(job["description"])
+        conn.close()
+        return render_template("job_detail.html", job=job)
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        flash("Error retrieving job details")
+        return redirect(url_for("index"))
+    finally:
+        conn.close()
 
 @app.route("/jobs")
 @app.route("/jobs/<string:job_id>")
