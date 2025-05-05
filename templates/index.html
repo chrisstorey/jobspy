@@ -35,4 +35,28 @@
         {% endfor %}
     </div>
 </div>
+
+<div class="card shadow-sm mt-4 mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-3">Track Your Job Search Progress</h3>
+                <p class="mb-3">Join our community and track your job search journey:</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-users text-primary me-2"></i> Form or join a job search work team</li>
+                    <li><i class="fas fa-tasks text-primary me-2"></i> Record your daily activities</li>
+                    <li><i class="fas fa-chart-line text-primary me-2"></i> Monitor your progress</li>
+                    <li><i class="fas fa-handshake text-primary me-2"></i> Get support from fellow job seekers</li>
+                </ul>
+                <a href="{{ url_for('search') }}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus me-2"></i>Register Now
+                </a>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-clipboard-list fa-5x text-primary mb-3"></i>
+                <p class="text-muted"><small>Based on "Team Up: Find a Better Job Faster with a Job Search Work Team"</small></p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
