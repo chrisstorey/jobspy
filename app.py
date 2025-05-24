@@ -49,7 +49,20 @@ def get_db_connection():
 
 
 def init_db():
-    """Initializes the database by creating the necessary tables."""
+    """Initializes the database.
+
+    Creates the `jobs` table if it doesn't already exist.
+    The schema for the `jobs` table is as follows:
+        - id (TEXT, PRIMARY KEY): Unique identifier for the job.
+        - title (TEXT, NOT NULL): The title of the job.
+        - location (TEXT): The location of the job.
+        - description (TEXT): The detailed description of the job.
+        - min_amount (REAL): The minimum salary amount.
+        - max_amount (REAL): The maximum salary amount.
+        - interval (TEXT): The salary interval (e.g., yearly, monthly).
+        - currency (TEXT): The currency of the salary.
+        - job_url (TEXT): The URL to the job posting.
+    """
     if not os.path.exists(os.getenv("DATABASE_FILE", "Z:\all_jobs.sqlite")):
         print("Database file does not exist. Please check the path.")
         return
@@ -77,6 +90,22 @@ def init_db():
 
 
 def process_markdown(text):
+    """Converts markdown text to sanitized HTML.
+
+    This function takes a markdown string, converts it to HTML using the
+    `markdown` library, and then sanitizes the HTML using `bleach` to
+    prevent XSS attacks.
+
+    Markdown Extensions Used:
+        - nl2br: Converts newlines to <br> tags.
+        - fenced_code: Allows for code blocks using backticks.
+
+    Args:
+        text (str): The markdown text to convert.
+
+    Returns:
+        str: The sanitized HTML output.
+    """
     # Convert markdown to HTML with safe extensions
     html = markdown.markdown(
         text, extensions=["nl2br", "fenced_code"], output_format="html5"
@@ -134,7 +163,21 @@ def load_user(user_id):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Login route to authenticate users."""
+    """Handles user authentication.
+
+    If the current user is already authenticated, redirects to the index page.
+
+    For GET requests:
+        Renders the login page.
+
+    For POST requests:
+        Attempts to authenticate the user based on 'username' and 'password'
+        submitted in the form.
+        - On successful authentication: Logs the user in and redirects to the
+          index page.
+        - On failed authentication: Flashes an "Invalid username or password"
+          message and re-renders the login page.
+    """
     if current_user.is_authenticated:
         return redirect(url_for("index"))
 
@@ -158,7 +201,12 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
-    """Logout route to log out the user."""
+    """Logs out the currently authenticated user.
+
+    Requires user login.
+    After logging out, it flashes a confirmation message ("You have been
+    logged out.") and redirects the user to the login page.
+    """
     logout_user()
     flash("You have been logged out.")
     return redirect(url_for("login"))
@@ -166,6 +214,10 @@ def logout():
 
 @app.route("/")
 def index():
+    """Renders the main page of the application.
+
+    Displays the three most recent blog posts, sorted by ID in descending order.
+    """
     # Get the 3 most recent blog posts (sorted by ID in reverse order)
     recent_posts = dict(sorted(blog_posts.items(), reverse=True)[:3])
     return render_template("index.html", blog_posts=recent_posts)
@@ -174,6 +226,16 @@ def index():
 @app.route("/blog/<int:post_id>")
 @login_required
 def blog_post(post_id):
+    """Displays a specific blog post identified by its post_id.
+
+    Requires user login.
+    The content of the blog post, assumed to be in Markdown format,
+    is converted to HTML before rendering. If a post with the given
+    post_id is not found, the user is redirected to the index page.
+
+    Args:
+        post_id (int): The ID of the blog post to display.
+    """
     post = blog_posts.get(post_id)
     if not post:
         return redirect(url_for("index"))
@@ -186,6 +248,14 @@ def blog_post(post_id):
 @app.route("/search")
 @login_required
 def search():
+    """Handles job searches based on a query parameter 'q'.
+
+    Requires user login.
+    Results are paginated. Job titles are formatted to title case,
+    and salary information is formatted into a readable string.
+    If the query parameter 'q' is not provided or is empty,
+    it redirects to the index page.
+    """
     query = request.args.get("q", "")
     if not query:
         return redirect(url_for("index"))
@@ -237,6 +307,19 @@ def search():
 @app.route("/jobs/<string:job_id>")
 @login_required
 def view_job(job_id=None):
+    """Displays detailed information for a specific job.
+
+    Requires user login.
+    If no job_id is provided in the URL, it redirects to the index page.
+    The job description, assumed to be in Markdown, is processed and
+    converted to HTML. The job title is formatted to title case, and
+    the salary information is formatted into a readable string.
+    If a job with the given job_id is not found, a message is flashed
+    to the user, and they are redirected to the index page.
+
+    Args:
+        job_id (str, optional): The ID of the job to display. Defaults to None.
+    """
     if job_id is None:
         # If no job_id is provided, redirect to index
         return redirect(url_for("index"))
