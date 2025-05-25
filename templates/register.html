@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Register</h2>
+
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username (required)</label>
+                        <input type="text" id="username" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password (required)</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name (required)</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="surname" class="form-label">Surname (required)</label>
+                        <input type="text" id="surname" name="surname" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email (required)</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mobile_number" class="form-label">Mobile Number (required)</label>
+                        <input type="text" id="mobile_number" name="mobile_number" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postcode" class="form-label">Postcode (required)</label>
+                        <input type="text" id="postcode" name="postcode" class="form-control" required>
+                    </div>
+                    <hr>
+                    <h5 class="mb-3">Previous Employment (Optional)</h5>
+                    <div class="mb-3">
+                        <label for="previous_job_title" class="form-label">Previous Job Title</label>
+                        <input type="text" id="previous_job_title" name="previous_job_title" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="previous_company" class="form-label">Previous Company</label>
+                        <input type="text" id="previous_company" name="previous_company" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="previous_job_description" class="form-label">Previous Job Description</label>
+                        <textarea id="previous_job_description" name="previous_job_description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+                <p class="mt-3 text-center">Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

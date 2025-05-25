@@ -97,6 +97,24 @@
     </nav>
 
     <div class="container my-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_class = 'alert-info' %} {# Default to info #}
+                    {% if category == 'message' %}
+                        {% set alert_class = 'alert-info' %}
+                    {% elif category == 'error' %} {# Common practice to use 'error' for danger #}
+                        {% set alert_class = 'alert-danger' %}
+                    {% elif category in ['success', 'warning', 'danger', 'info', 'light', 'dark'] %}
+                        {% set alert_class = 'alert-' + category %}
+                    {% endif %}
+                    <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <main>
             {% block content %}{% endblock %}
         </main>
