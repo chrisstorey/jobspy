@@ -2,9 +2,25 @@
 
 # Jobspy Collector for Wakefield
 
-Jobspy Collector for Wakefield is a web application designed to scrape job postings from various online sources, store them in a local SQLite database, and provide a web interface for users to search, view, and browse these jobs. The application also includes a simple blog feature.
+Jobspy Collector for Wakefield is a web application designed to scrape job postings from various online sources, store them in a local SQLite database, and provide a web interface for users to search, view, and browse these jobs. The application also includes a simple blog feature and user authentication.
 
 This project utilizes Python, Flask (as the web framework), SQLite (for the database), and the `jobspy` library for scraping job data.
+
+## Project Structure
+
+The application has been refactored into a modular structure to improve organization and maintainability:
+
+*   `app.py`: The main Flask application file. It initializes the Flask app, registers blueprints, and runs the development server.
+*   `auth.py`: Handles all authentication-related logic, including user registration, login, logout, session management (via Flask-Login), and email validation routes.
+*   `jobs.py`: Manages routes related to job searching and viewing detailed job descriptions.
+*   `blog_routes.py`: Contains routes for displaying blog posts and the main index page (which lists recent blog posts).
+*   `db.py`: Contains database connection logic (`get_db_connection`) and the database initialization function (`init_db`).
+*   `email_utils.py`: Manages email sending functionalities (e.g., validation and welcome emails) and configures Flask-Mail.
+*   `utils/utils.py`: Contains shared utility functions used across the application, such as text formatting and markdown processing.
+*   `models/models.py`: Defines data models, primarily the `User` class for Flask-Login and database interaction.
+*   `blog.py`: Contains the data for blog posts.
+*   `main.py`: The standalone job scraping script that populates the database.
+*   `templates/`: Contains HTML templates for the web interface.
 
 ## Installation
 
@@ -36,31 +52,32 @@ This project uses a `.env` file to manage environment variables.
     ```
 
 2.  **Edit the `.env` file:**
-    Open the `.env` file and update the variables as needed. Here are the key variables:
+    Open the `.env` file and update the variables as needed. Key variables include:
 
-    *   `DATABASE_FILE`: The path to the SQLite database file. Example: `all_jobs.sqlite` or `data/all_jobs.sqlite`.
-    *   `DATABASE_TABLE`: The name of the table within the SQLite database where jobs will be stored. Example: `jobs`.
-    *   `LOCATION`: The default location to search for jobs (used by the scraper `main.py`). Example: `Wakefield`.
-    *   `MAX_RESULTS`: The maximum number of results to fetch per job search site (used by the scraper `main.py`). Example: `50`.
-    *   `HOURS_OLD`: The maximum age of job postings to retrieve, in hours (used by the scraper `main.py`). Example: `24`.
-    *   `SECRET_KEY`: A secret key for Flask session management. This should be a long, random string. Example: `your-very-secret-and-random-string`.
-    *   `FLASK_DEBUG`: The web application (`app.py`) currently runs with `debug=True` by default. If you need to run it in production mode (`debug=False`), you would need to modify the `app.run(debug=True)` line in `app.py` directly or adjust the execution command if running via Docker (e.g., by setting the `FLASK_DEBUG` environment variable if `app.py` is modified to use it). This variable is not currently read from the `.env` file by `app.py`.
+    *   `DATABASE_URL`: The connection string or path to the SQLite database file. Example: `instance/job_search_app.db`.
+    *   `SECRET_KEY`: A secret key for Flask session management. This should be a long, random string.
+    *   `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`: Configuration for Flask-Mail to send emails.
+    *   Scraper-specific variables like `LOCATION`, `MAX_RESULTS`, `HOURS_OLD` are used by `main.py`.
 
-    Ensure `SECRET_KEY` is set to a strong, unique value, especially if deploying the application.
+    Ensure `SECRET_KEY` is set to a strong, unique value. For email sending, provide valid SMTP server details.
 
 ## Database Setup
 
-The application uses an SQLite database to store job postings.
+The application uses an SQLite database. The schema is defined in `db.py`.
 
-*   **Scraper (`main.py`):** If you run the job scraper script (`python main.py`) first, it will automatically create the SQLite database file (if it doesn't exist) and the necessary table (`jobs` by default, as defined in your `.env` file) before populating it with scraped jobs.
-*   **Web Application (`app.py`):** The Flask web application (`app.py`) also includes a function (`init_db()`) that can create the database tables if they don't already exist. This function is typically called when the application starts if the database file specified in `.env` is found but is empty or missing tables.
+*   **Initialization:** The `init_db()` function in `db.py` creates all necessary tables (users, jobs, etc.). This function is called automatically when `app.py` is run if the script is executed directly (i.e., `python app.py`).
+*   **Scraper (`main.py`):** The job scraper script (`main.py`) also interacts with the database, populating the `jobs` table. It's recommended to run the web application once (`python app.py`) to ensure the database schema is created before running the scraper, or ensure `main.py` can also create the schema if needed.
 
 **Recommended first step:**
-Ensure your `.env` file is configured correctly, then run the scraper to populate the database:
+Ensure your `.env` file is configured correctly, then run the web application once to initialize the database:
+```bash
+python app.py 
+```
+(The application will start, and `init_db()` will be called. You can stop it with Ctrl+C after database initialization if you wish.)
+Then, run the scraper to populate the database with jobs:
 ```bash
 python main.py
 ```
-This will create and populate the database. After this, the web application (`app.py`) will be able to read from it.
 
 ## Usage
 
@@ -74,11 +91,11 @@ To run the scraper:
 ```bash
 python main.py
 ```
-This will use the settings from your `.env` file (like `LOCATION`, `MAX_RESULTS`, `HOURS_OLD`) to find and save jobs.
+This will use the settings from your `.env` file to find and save jobs.
 
 ### Running the Web Application
 
-The web application (`app.py`) provides a web interface to search and view the scraped jobs.
+The web application (`app.py`) provides a web interface to search and view jobs, and manage user accounts. `app.py` now acts as the central orchestrator, setting up the Flask application and registering blueprints from the various modules (like `auth.py`, `jobs.py`, `blog_routes.py`).
 
 To run the web application:
 ```bash
@@ -87,7 +104,7 @@ python app.py
 Once started, you can typically access the application by opening your web browser and navigating to:
 `http://127.0.0.1:5000/`
 
-You will need to log in to access most features. A default test user is created in `app.py` (`username: chris`, `password: Liam1234`). For a production environment, you should implement a proper user management system.
+User registration and login are available via the web interface. You will need to register an account and validate your email to access most features.
 
 ## Docker Usage
 
@@ -102,42 +119,31 @@ This project includes a `Dockerfile` to build and run the application in a Docke
 2.  **Run the Docker container (Job Scraper):**
     The default command for the Docker container is to run the job scraper (`main.py`).
     ```bash
-    docker run --rm -v $(pwd)/.env:/app/.env -v $(pwd)/your_database_directory:/app/data jobspy-collector
+    docker run --rm --env-file .env -v $(pwd)/instance:/app/instance jobspy-collector
     ```
     *   `--rm`: Removes the container once it exits.
-    *   `-v $(pwd)/.env:/app/.env`: Mounts your local `.env` file into the container. Ensure it's configured correctly.
-    *   `-v $(pwd)/your_database_directory:/app/data`: **Important:** Mount a directory from your host to `/app/data` (or wherever your `DATABASE_FILE` in `.env` points within the container's `/app` directory) to persist the SQLite database. For example, if `DATABASE_FILE=data/all_jobs.sqlite` in your `.env`, you would create a `data` directory on your host and mount it. If `DATABASE_FILE=all_jobs.sqlite`, you might mount `$(pwd)/all_jobs.sqlite:/app/all_jobs.sqlite` (for a file) or `$(pwd)/db_data:/app` if `DATABASE_FILE` is in the root of `/app`. Adjust the volume mount according to your `DATABASE_FILE` setting.
+    *   `--env-file .env`: Passes your local `.env` file to the container.
+    *   `-v $(pwd)/instance:/app/instance`: **Important:** Mount a directory from your host (e.g., `instance`) to `/app/instance` (or wherever your `DATABASE_URL` in `.env` points within the container's `/app` directory) to persist the SQLite database. This assumes `DATABASE_URL=instance/job_search_app.db`. Adjust if your path is different.
 
 3.  **Running the Web Application with Docker:**
-    The current `Dockerfile` is primarily set up to run `main.py` (the scraper). To run the web application (`app.py`) using Docker, you would typically:
-    *   **Option 1 (Modify Dockerfile CMD):** Change the `CMD` instruction in the `Dockerfile` to `["python", "/app/app.py"]` and rebuild the image.
-    *   **Option 2 (Override CMD at runtime):**
-        ```bash
-        docker run --rm -p 5000:5000 -v $(pwd)/.env:/app/.env -v $(pwd)/your_database_directory:/app/data jobspy-collector python /app/app.py
-        ```
-        *   `-p 5000:5000`: Maps port 5000 on your host to port 5000 in the container, allowing you to access the web app.
-        *   The volume mounts for `.env` and the database directory are still necessary.
+    To run the web application (`app.py`) using Docker, you can override the default CMD:
+    ```bash
+    docker run --rm -p 5000:5000 --env-file .env -v $(pwd)/instance:/app/instance jobspy-collector python /app/app.py
+    ```
+    *   `-p 5000:5000`: Maps port 5000 on your host to port 5000 in the container.
+    *   The `--env-file` and volume mount for the database directory are still necessary.
 
-    For a more robust setup for running the web app, you might consider a dedicated Dockerfile or using Docker Compose.
+    For a more robust setup for running the web app, consider a dedicated Dockerfile for the web application or using Docker Compose.
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute to this project, please follow these general steps:
+Contributions are welcome! Please follow these general steps:
 
-1.  **Fork the repository.**
-2.  **Create a new branch** for your feature or bug fix:
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
-    or
-    ```bash
-    git checkout -b bugfix/issue-number
-    ```
-3.  **Make your changes** and commit them with clear, descriptive messages.
-4.  **Push your changes** to your forked repository.
-5.  **Create a Pull Request (PR)** against the main branch of the original repository.
-
-Please ensure your code adheres to any existing style guidelines and include tests if applicable.
+1.  Fork the repository.
+2.  Create a new branch for your feature or bug fix.
+3.  Make your changes and commit them with clear, descriptive messages.
+4.  Push your changes to your forked repository.
+5.  Create a Pull Request (PR) against the main branch of the original repository.
 
 ## License
 
