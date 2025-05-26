@@ -186,7 +186,7 @@ def process_markdown(text):
 
 
 # Placeholder email sending functions
-def send_validation_email(user_email, validation_link):
+def send_validation_email(user_email, username, validation_link): # Added username to signature
     """
     Placeholder function to send a validation email.
     In a real application, this would use Flask-Mail to send an email.
@@ -223,12 +223,28 @@ def send_welcome_email(user_email):
     Placeholder function to send a welcome email.
     In a real application, this would use Flask-Mail to send an email.
     """
-    print(f"Sending welcome email to: {user_email}")
-    # Example (actual email sending would be here):
-    # from flask_mail import Message
-    # msg = Message("Welcome to Hudd-Jobs!", recipients=[user_email])
-    # msg.body = "Thank you for registering at Hudd-Jobs.com!"
-    # mail.send(msg)
+    try:
+        msg = Message(
+            subject="Welcome to Hudd-Jobs!",
+            sender=app.config.get('MAIL_DEFAULT_SENDER'),
+            recipients=[user_email]
+        )
+        msg.body = """Hi there,
+
+Welcome to Hudd-Jobs! We're excited to have you as part of our community.
+
+Your email has been successfully validated, and your account is now active. You can log in and start exploring job opportunities or connecting with talent.
+
+If you have any questions, feel free to reach out.
+
+Best regards,
+The Hudd-Jobs Team
+"""
+        mail.send(msg)
+        print(f"Welcome email supposedly sent to {user_email}")
+    except Exception as e:
+        print(f"Error sending welcome email to {user_email}: {e}")
+        # In a production app, this failure should be logged more robustly.
 
 
 # Flask-Login setup
