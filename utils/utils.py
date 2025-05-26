@@ -62,3 +62,56 @@ def format_salary(min_amount, max_amount, currency, interval):
         currency_symbol = "£" if currency == "GBP" else currency
         return f"{currency_symbol}{min_amount:,.0f} - {currency_symbol}{max_amount:,.0f} {interval}"
     return "Not specified"
+
+
+import bleach
+import markdown
+
+def process_markdown(text):
+    """Converts markdown text to sanitized HTML.
+
+    This function takes a markdown string, converts it to HTML using the
+    `markdown` library, and then sanitizes the HTML using `bleach` to
+    prevent XSS attacks.
+
+    Markdown Extensions Used:
+        - nl2br: Converts newlines to <br> tags.
+        - fenced_code: Allows for code blocks using backticks.
+
+    Args:
+        text (str): The markdown text to convert.
+
+    Returns:
+        str: The sanitized HTML output.
+    """
+    # Convert markdown to HTML with safe extensions
+    html = markdown.markdown(
+        text, extensions=["nl2br", "fenced_code"], output_format="html5"
+    )
+
+    # Clean the HTML output to prevent XSS
+    allowed_tags = [
+        "p",
+        "ul",
+        "ol",
+        "li",
+        "strong",
+        "em",
+        "a",
+        "code",
+        "pre",
+        "br",
+        "hr",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+    ]
+    allowed_attrs = {"a": ["href", "title", "target"]}
+
+    clean_html = bleach.clean(
+        html, tags=allowed_tags, attributes=allowed_attrs, strip=True
+    )
+    return clean_html
