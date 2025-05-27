@@ -3,8 +3,8 @@ import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from models.models import User
-from db import get_db_connection # Updated import
+from models.models import User # User model from PonyORM
+from pony.orm import db_session, select # PonyORM imports
 from email_utils import send_validation_email, send_welcome_email # Updated import
 
 login_manager = LoginManager()
@@ -13,17 +13,12 @@ login_manager.login_view = "auth.login"  # Adjusted to auth.login
 auth_bp = Blueprint('auth', __name__, template_folder='../templates')
 
 @login_manager.user_loader
+@db_session
 def load_user(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-    conn.close()
-    if user:
-        return User(user[0], user[1], user[2], user[3], user[4], user[5], user[6], user[7])
-    return None
+    return User.get(id=user_id)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
+@db_session
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('blog.index')) # Corrected to blog.index
@@ -31,49 +26,57 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, email))
-        existing_user = cursor.fetchone()
+        
+        existing_user = User.get(lambda u: u.username == username or u.email == email)
         if existing_user:
             flash('Username or email already exists. Please choose different ones.', 'danger')
-            conn.close()
             return redirect(url_for('auth.register'))
+            
         hashed_password = generate_password_hash(password)
-        api_key = secrets.token_hex(16)
+        api_key = secrets.token_hex(16) # Ensure api_key is generated
         validation_token = secrets.token_hex(16)
-        cursor.execute("INSERT INTO users (username, email, password_hash, api_key, email_validated, validation_token) VALUES (?, ?, ?, ?, ?, ?)",
-                       (username, email, hashed_password, api_key, False, validation_token))
-        conn.commit()
-        conn.close()
+        
+        User(
+            username=username,
+            email=email,
+            password_hash=hashed_password,
+            api_key=api_key,
+            validation_token=validation_token
+            # email_validated defaults to False, created_at defaults to now in model
+        )
+        # No explicit commit needed due to @db_session
+        
         send_validation_email(email, validation_token)
         flash('Registration successful! Please check your email to validate your account.', 'success')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login')) # Explicitly ensuring it's auth.login
     return render_template('register.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@db_session
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('blog.index')) # Corrected to blog.index
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user_data = cursor.fetchone()
-        conn.close()
-        if user_data and check_password_hash(user_data[3], password):
-            user = User(user_data[0], user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], user_data[7])
+        
+        user = User.get(username=username) # Fetch PonyORM User entity
+        
+        if user and check_password_hash(user.password_hash, password):
             if user.email_validated:
-                login_user(user)
+                login_user(user) # Pass the PonyORM User entity directly
                 flash('Login successful!', 'success')
-                return redirect(url_for('index'))
+                # Corrected from url_for('index') to url_for('blog.index') as per previous context.
+                # If 'index' is a different general dashboard, it should be 'some_other_blueprint.index' or just '/' if globally defined
+                return redirect(url_for('blog.index')) 
             else:
                 flash('Please validate your email before logging in.', 'warning')
                 return redirect(url_for('auth.login'))
         else:
             flash('Invalid username or password.', 'danger')
+            # For POST requests that fail login, we still want to re-render login.html
+            return render_template('login.html') 
+    # This is for GET requests
     return render_template('login.html')
 
 @auth_bp.route('/logout')
@@ -84,21 +87,17 @@ def logout():
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/validate_email/<token>')
+@db_session
 def validate_email(token):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE validation_token = ?", (token,))
-    user_data = cursor.fetchone()
-    if user_data:
-        user = User(user_data[0], user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], user_data[7])
-        if not user.email_validated:
-            cursor.execute("UPDATE users SET email_validated = TRUE, validation_token = NULL WHERE id = ?", (user.id,))
-            conn.commit()
+    user_to_validate = User.get(validation_token=token)
+    if user_to_validate:
+        if not user_to_validate.email_validated:
+            user_to_validate.email_validated = True
+            user_to_validate.validation_token = None # Clear the token
+            send_welcome_email(user_to_validate.email)
             flash('Email validated successfully! You can now log in.', 'success')
-            send_welcome_email(user.email)
         else:
             flash('Email already validated.', 'info')
     else:
         flash('Invalid or expired validation token.', 'danger')
-    conn.close()
     return redirect(url_for('auth.login'))

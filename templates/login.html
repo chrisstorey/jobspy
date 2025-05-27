@@ -5,7 +5,7 @@
         <div class="card bg-dark text-white">
             <div class="card-body">
                 <h2 class="card-title text-center text-dark-orange">Login</h2>
-                <form method="POST" action="{{ url_for('login') }}">
+                <form method="POST" action="{{ url_for('auth.login') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" id="username" name="username" class="form-control">

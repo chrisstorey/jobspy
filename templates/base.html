@@ -78,10 +78,10 @@
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="/">Hudd-Jobs.com</a>
+            <a class="navbar-brand" href="{{ url_for('blog.index') }}">Hudd-Jobs.com</a>
             {% if current_user.is_authenticated %}
             <div class="d-flex align-items-center">
-                <form action="{{ url_for('search') }}" method="get" class="d-flex me-3">
+                <form action="{{ url_for('jobs.search') }}" method="get" class="d-flex me-3">
                     <input class="form-control me-2"
                            type="search"
                            name="q"
@@ -90,7 +90,7 @@
                            aria-label="Search">
                     <button class="btn btn-secondary" type="submit">Search</button>
                 </form>
-                <a href="{{ url_for('logout') }}" class="btn btn-primary">Sign out</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-primary">Sign out</a>
             </div>
             {% endif %}
         </div>
