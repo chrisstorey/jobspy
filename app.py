@@ -35,7 +35,7 @@ CORS(app)
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
-    if not os.path.exists(os.getenv("DATABASE_FILE", "all_jobs.sqlite")):
+    if not os.path.exists(os.getenv("DATABASE_FILE", "2.sqlite")):
         raise FileNotFoundError(
             "Database file not found. Please ensure the database file exists."
         )
@@ -265,4 +265,4 @@ def view_job(job_id=None):
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    app.run(port=8080, debug=True)

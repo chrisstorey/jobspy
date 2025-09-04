@@ -54,6 +54,7 @@ def get_jobs(
         hours_old=hours_old,
         country_indeed="UK",
         linkedin_fetch_description=True,
+        ca_cert="/usr/local/scripts/Certificates/Universal Credit Root CA.pem"
     )
     jobs["search_term"] = search_term
     jobs["search_location"] = location
