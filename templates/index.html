@@ -7,7 +7,7 @@
                 <div class="card-body text-center p-4">
                     <h1 class="display-5 mb-3">Welcome to Hudd-Jobs.com</h1>
                     <p class="lead mb-4">Find your next tech role or explore industry insights</p>
-                    <a href="{{ url_for('search') }}" class="btn btn-light btn-lg">
+                    <a href="{{ request.url_for('search') }}" class="btn btn-light btn-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search me-2" viewBox="0 0 16 16">
                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                         </svg>
@@ -28,7 +28,7 @@
                     <h5 class="card-title">{{ post.title }}</h5>
                     <p class="card-text text-muted mb-2">{{ post.date }}</p>
                     <p class="card-text flex-grow-1">{{ post.excerpt }}</p>
-                    <a href="{{ url_for('blog_post', post_id=post_id) }}" class="btn btn-secondary mt-auto">Read More</a>
+                    <a href="{{ request.url_for('blog_post', post_id=post_id) }}" class="btn btn-secondary mt-auto">Read More</a>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
                     <li><i class="fas fa-chart-line text-primary me-2"></i> Monitor your progress</li>
                     <li><i class="fas fa-handshake text-primary me-2"></i> Get support from fellow job seekers</li>
                 </ul>
-                <a href="{{ url_for('search') }}" class="btn btn-secondary">
+                <a href="{{ request.url_for('search') }}" class="btn btn-secondary">
                     <i class="fas fa-user-plus me-2"></i>Register Now
                 </a>
             </div>
