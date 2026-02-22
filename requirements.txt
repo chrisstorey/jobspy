@@ -1,6 +1,6 @@
 dotenv~=0.9.9
 jobspy~=0.29.0
-pandas~=2.3.0
+pandas~=3.0.1
 python-dotenv~=1.1.0
 
 bleach~=6.2.0
